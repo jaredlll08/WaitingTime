@@ -1,0 +1,18 @@
+[
+  {
+    "modid": "waitingtime",
+    "name": "WaitingTime",
+    "description": "Adds games to the startup screen.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "Jaredlll08, Modmuss50"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
