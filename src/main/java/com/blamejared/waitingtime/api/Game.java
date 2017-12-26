@@ -16,7 +16,11 @@ public abstract class Game {
     
     protected Random random;
     
-    public Game(double canvasLeft, double canvasRight, double canvasTop, double canvasBottom) {
+    public Game() {
+    }
+    
+    public void start(double canvasLeft, double canvasRight, double canvasTop, double canvasBottom){
+        random = new Random();
         this.canvasLeft = canvasLeft;
         this.canvasRight = canvasRight;
         this.canvasTop = canvasTop;
@@ -25,8 +29,6 @@ public abstract class Game {
         height = canvasBottom - canvasTop;
         prevWidth = width;
     }
-    
-    public abstract void start();
     
     public abstract void update();
     
@@ -76,5 +78,7 @@ public abstract class Game {
         this.canvasBottom = canvasBottom;
     }
     
-    
+    public Random getRandom() {
+        return random;
+    }
 }

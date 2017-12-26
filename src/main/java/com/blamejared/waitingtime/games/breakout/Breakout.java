@@ -15,8 +15,7 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Breakout extends Game {
     
-    public Breakout(int canvasLeft, int canvasRight, int canvasTop, int canvasBottom) {
-        super(canvasLeft, canvasRight, canvasTop, canvasBottom);
+    public Breakout() {
     }
     
     private double paddleX;
@@ -45,7 +44,7 @@ public class Breakout extends Game {
     private double score;
     
     @Override
-    public void start() {
+    public void start(double canvasLeft, double canvasRight, double canvasTop, double canvasBottom) {
         random = new Random();
         paddleWidth = width / 4;
         paddleHeight = (height / width) * 20;
@@ -79,7 +78,7 @@ public class Breakout extends Game {
     @Override
     public void resize(double canvasLeft, double canvasRight, double canvasTop, double canvasBottom) {
         super.resize(canvasLeft, canvasRight, canvasTop, canvasBottom);
-        start();
+        start(canvasLeft, canvasRight, canvasTop, canvasBottom);
         ballVelDefault *= width / prevWidth;
     }
     
@@ -125,7 +124,7 @@ public class Breakout extends Game {
         } else {
             if(canvasLeft + x - Display.getX() > canvasLeft && canvasLeft + x - Display.getX() < canvasLeft + 160) {
                 if(canvasTop + y - Display.getY() > (canvasTop + 80 + height / 2) - ((height / 6) / 2) && canvasTop + y - Display.getY() < (canvasTop + 80 + height / 2) - ((height / 6) / 2) + 160) {
-                    start();
+                    start(canvasLeft, canvasRight, canvasTop, canvasBottom);
                 }
             }
         }

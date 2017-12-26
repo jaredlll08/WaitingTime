@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.*;
-import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.*;
 import net.minecraftforge.fml.common.*;
@@ -42,6 +41,8 @@ public class CustomThread {
     private static Texture forgeTexture;
     public static final IResourcePack mcPack = Minecraft.getMinecraft().mcDefaultResourcePack;
     public static final IResourcePack fmlPack = createResourcePack(FMLSanityChecker.fmlLocation);
+    public static IResourcePack miscPack;
+    
     
     private static final ResourceLocation logoLoc = new ResourceLocation("textures/gui/title/mojang.png");
     private static final ResourceLocation forgeLoc = new ResourceLocation(getString("forgeTexture", "fml:textures/gui/forge.png"));
@@ -112,6 +113,16 @@ public class CustomThread {
         memoryWarnColor = getHex("memoryWarn", 0xE6E84A);
         memoryLowColor = getHex("memoryLow", 0xE42F2F);
         
+        File miscPackFile = new File(Minecraft.getMinecraft().mcDataDir, getString("resourcePackPath", "resources"));
+        
+        try(FileWriter w = new FileWriter(configFile)) {
+            config.store(w, "Splash screen properties");
+        } catch(IOException e) {
+            FMLLog.log.error("Could not save the splash.properties file", e);
+        }
+        
+        miscPack = createResourcePack(miscPackFile);
+        
         initReflection();
         return new Thread(new Runnable() {
             private long updateTiming;
@@ -132,8 +143,8 @@ public class CustomThread {
                 int right = 320 + w / 2;
                 int bottom = 240 + h / 2;
                 int top = 240 - h / 2;
-                game = new Pong(left, right, top, bottom);
-                game.start();
+                game = new Pong();
+                game.start(left, right, top, bottom);
                 lastFPS = getTime();
                 boolean repeatEventsEnabled = Keyboard.areRepeatEventsEnabled();
                 Keyboard.enableRepeatEvents(true);

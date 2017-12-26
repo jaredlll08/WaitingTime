@@ -15,8 +15,7 @@ import java.io.*;
 import java.nio.IntBuffer;
 import java.util.Iterator;
 
-import static com.blamejared.waitingtime.CustomThread.fmlPack;
-import static com.blamejared.waitingtime.CustomThread.mcPack;
+import static com.blamejared.waitingtime.CustomThread.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_BGRA;
 import static org.lwjgl.opengl.GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
@@ -149,13 +148,21 @@ public class Texture {
     private static final IntBuffer buf = BufferUtils.createIntBuffer(4 * 1024 * 1024);
     
     
-    public static InputStream open(ResourceLocation loc, @Nullable ResourceLocation fallback, boolean allowResourcePack) throws IOException {
-        if(!allowResourcePack)
+    private static InputStream open(ResourceLocation loc, @Nullable ResourceLocation fallback, boolean allowResourcePack) throws IOException
+    {
+        if (!allowResourcePack)
             return mcPack.getInputStream(loc);
         
-        if(fmlPack.resourceExists(loc)) {
+        if(miscPack.resourceExists(loc))
+        {
+            return miscPack.getInputStream(loc);
+        }
+        else if(fmlPack.resourceExists(loc))
+        {
             return fmlPack.getInputStream(loc);
-        } else if(!mcPack.resourceExists(loc) && fallback != null) {
+        }
+        else if(!mcPack.resourceExists(loc) && fallback != null)
+        {
             return open(fallback, null, true);
         }
         return mcPack.getInputStream(loc);

@@ -11,10 +11,6 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Pong extends Game {
     
-    public Pong(int canvasLeft, int canvasRight, int canvasTop, int canvasBottom) {
-        super(canvasLeft, canvasRight, canvasTop, canvasBottom);
-    }
-    
     private double paddleX;
     private double paddleY;
     
@@ -34,13 +30,12 @@ public class Pong extends Game {
     private double ballVelDefault;
     
     
-    private int scorePlayer;
-    private int scoreAI;
-    
+    private int scorePlayer = 0;
+    private int scoreAI = 0;
     
     @Override
-    public void start() {
-        random = new Random();
+    public void start(double canvasLeft, double canvasRight, double canvasTop, double canvasBottom) {
+        super.start(canvasLeft, canvasRight, canvasTop, canvasBottom);
         paddleWidth = (height / width) * 20;
         paddleHeight = width / 10;
         paddleX = canvasRight - paddleWidth - 20;
@@ -60,16 +55,12 @@ public class Pong extends Game {
         if(random.nextBoolean()) {
             ballVelY = -ballVelDefault;
         }
-        
-        scorePlayer = 0;
-        scoreAI = 0;
-        
     }
     
     @Override
     public void resize(double canvasLeft, double canvasRight, double canvasTop, double canvasBottom) {
         super.resize(canvasLeft, canvasRight, canvasTop, canvasBottom);
-        start();
+        start(canvasLeft, canvasRight, canvasTop, canvasBottom);
         ballVelDefault *= width / prevWidth;
     }
     
