@@ -25,7 +25,11 @@ import java.util.concurrent.locks.Lock;
 import static org.lwjgl.opengl.GL11.*;
 
 public class CustomThread {
-    
+    public static StatHandler.Stat<Boolean> SHOW_TIME = new StatHandler.Stat<>("show_stats", Boolean::parseBoolean, true).saveDefault();
+    public static StatHandler.Stat<Boolean> SHOW_START_TIMES = new StatHandler.Stat<>("show_start_times", Boolean::parseBoolean, true).saveDefault();
+    public static StatHandler.Stat<Integer> LOAD_TIME = new StatHandler.Stat<>("load_time", Integer::parseInt, 0);
+    public static StatHandler.Stat<Integer> START_TIMES = new StatHandler.Stat<>("start_times", Integer::parseInt, 0);
+
     private static final Semaphore mutex = new Semaphore(1);
     private static final int TIMING_FRAME_COUNT = 200;
     private static final int TIMING_FRAME_THRESHOLD = TIMING_FRAME_COUNT * 5 * 1000000;
@@ -82,11 +86,13 @@ public class CustomThread {
      * last fps time
      */
     public static long lastFPS;
+    public static int currentLoadTime;
     
     private static int prevLeft, prevRight, prevBottom, prevTop;
     public static Game game;
     
     public static Thread createNewThread() {
+        StatHandler.loadStats();
         File configFile = new File(Minecraft.getMinecraft().mcDataDir, "config/splash.properties");
         
         File parent = configFile.getParentFile();
@@ -148,6 +154,12 @@ public class CustomThread {
                 lastFPS = getTime();
                 boolean repeatEventsEnabled = Keyboard.areRepeatEventsEnabled();
                 Keyboard.enableRepeatEvents(true);
+
+                boolean showTime = StatHandler.get(SHOW_TIME);
+                boolean showStartTimes = StatHandler.get(SHOW_START_TIMES);
+                int loadTime = StatHandler.get(LOAD_TIME);
+                int startTimes = StatHandler.get(START_TIMES);
+
                 while(!isDone()) {
                     
                     updateFPS();
@@ -265,6 +277,13 @@ public class CustomThread {
                     game.render();
                     
                     drawString("FPS: " + currentFPS, left + 5, top + 5, 0xFFFFFF, 180);
+                    if (showTime) {
+                        drawString("Total Time: " + getReadableTime(loadTime + currentLoadTime), left + 5, top + 7 + fontRenderer.FONT_HEIGHT * 2, 0xFFFFFF, 180);
+                        drawString("Current Time: " + getReadableTime(currentLoadTime), left + 5, top + 10 + fontRenderer.FONT_HEIGHT * 4, 0xFFFFFF, 180);
+                        drawString("Avg Time: " + getReadableTime(startTimes > 0 ? loadTime / startTimes: currentLoadTime), left + 5, top + 13 + fontRenderer.FONT_HEIGHT * 6, 0xFFFFFF, 180);
+                        if (showStartTimes)
+                            drawString("Times Loaded: " + startTimes, left + 5, top + 17 + fontRenderer.FONT_HEIGHT * 8, 0xFFFFFF, 180);
+                    }
                     mutex.acquireUninterruptibly();
                     long updateStart = System.nanoTime();
                     
@@ -290,6 +309,10 @@ public class CustomThread {
                         Display.sync(100);
                     }
                 }
+                StatHandler.set(LOAD_TIME, loadTime + currentLoadTime);
+                StatHandler.set(START_TIMES, startTimes + 1);
+                StatHandler.saveStats();
+
                 Keyboard.enableRepeatEvents(repeatEventsEnabled);
                 clearGL();
             }
@@ -402,8 +425,16 @@ public class CustomThread {
             currentFPS = fps;
             fps = 0;
             lastFPS += 1000;
+            currentLoadTime++;
         }
         fps++;
+    }
+
+    public static String getReadableTime(int time) {
+        int hours = time / 3600;
+        int minutes = (time / 60) % 60;
+        int seconds = time % 60;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
     
     public static int bytesToMb(long bytes) {
