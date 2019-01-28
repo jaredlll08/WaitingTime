@@ -274,10 +274,11 @@ public class CustomThread {
                     glEnd();
                     glDisable(GL_TEXTURE_2D);
                     glPopMatrix();
-                    
-                    game.update();
+    
+                    if(Display.isActive()) {
+                        game.update();
+                    }
                     game.render();
-                    
                     drawString("FPS: " + currentFPS, left + 5, top + 5, 0xFFFFFF, 180);
                     if(showTime) {
                         drawString("Total Time: " + getReadableTime(loadTime + currentLoadTime), left + 5, top + 7 + fontRenderer.FONT_HEIGHT * 2, 0xFFFFFF, 180);
