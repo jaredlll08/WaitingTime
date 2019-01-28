@@ -7,8 +7,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.*;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.client.SplashProgress;
+import net.minecraftforge.fml.client.*;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.asm.FMLSanityChecker;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +38,7 @@ public class CustomThread {
     private static boolean isDisplayVSyncForced = false;
     private static int backgroundColor = 0x111111;
     private static int angle = 0;
+    private static boolean enabled;
     private static boolean rotate = false;
     private static int logoOffset;
     
@@ -111,6 +113,7 @@ public class CustomThread {
         
         // Enable if we have the flag, and there's either no optifine, or optifine has added a key to the blackboard ("optifine.ForgeSplashCompatible")
         // Optifine authors - add this key to the blackboard if you feel your modifications are now compatible with this code.
+        enabled =            getBool("enabled",      defaultEnabled) && ( (!FMLClientHandler.instance().hasOptifine()) || Launch.blackboard.containsKey("optifine.ForgeSplashCompatible"));
         rotate = getBool("rotate", false);
         logoOffset = getInt("logoOffset", 0);
         barBorderColor = getHex("barBorder", 0xC0C0C0);
@@ -128,6 +131,7 @@ public class CustomThread {
         } catch(IOException e) {
             FMLLog.log.error("Could not save the splash.properties file", e);
         }
+       
         File miscPackFile = new File(Minecraft.getMinecraft().mcDataDir, getString("resourcePackPath", "resources"));
         
         miscPack = createResourcePack(miscPackFile);
@@ -138,6 +142,9 @@ public class CustomThread {
             
             @Override
             public void run() {
+                if(!enabled){
+                    return;
+                }
                 setGL();
                 
                 logoTexture = new Texture(logoLoc, null, false);
@@ -183,7 +190,6 @@ public class CustomThread {
                     glViewport(0, 0, w, h);
                     glMatrixMode(GL_PROJECTION);
                     glLoadIdentity();
-                    
                     
                     left = 320 - w / 2;
                     right = 320 + w / 2;
@@ -274,7 +280,7 @@ public class CustomThread {
                     glEnd();
                     glDisable(GL_TEXTURE_2D);
                     glPopMatrix();
-    
+                    
                     if(Display.isActive()) {
                         game.update();
                     }
@@ -521,6 +527,14 @@ public class CustomThread {
     public static String getMemoryString(int memory) {
         return StringUtils.leftPad(Integer.toString(memory), 4, ' ') + " MB";
     }
+    
+    public static void drawBoxFast(double x, double y, double w, double h) {
+        glVertex2d(x, y);
+        glVertex2d(x, y + h);
+        glVertex2d(x + w, y + h);
+        glVertex2d(x + w, y);
+    }
+    
     
     public static void drawBox(double w, double h) {
         glBegin(GL_QUADS);

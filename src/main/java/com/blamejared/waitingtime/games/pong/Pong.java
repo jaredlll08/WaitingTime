@@ -157,32 +157,25 @@ public class Pong extends Game {
             }
         }
         glPopMatrix();
-        
         glPushMatrix();
         CustomThread.setColor(0xFFFFFF);
-        GL11.glTranslated(paddleX, paddleY, 0);
-        CustomThread.drawBox(paddleWidth, paddleHeight);
-        glPopMatrix();
+        glBegin(GL_QUADS);
+        CustomThread.drawBoxFast(paddleX, paddleY, paddleWidth, paddleHeight);
         
-        glPushMatrix();
-        CustomThread.setColor(0xFFFFFF);
-        GL11.glTranslated(paddleAIX, paddleAIY, 0);
-        CustomThread.drawBox(paddleWidth, paddleHeight);
-        glPopMatrix();
+        CustomThread.drawBoxFast(paddleAIX, paddleAIY, paddleWidth, paddleHeight);
         
+        CustomThread.drawBoxFast(ballX, ballY, ballSize, ballSize);
+        glEnd();
+        glPopMatrix();
         glPushMatrix();
         CustomThread.drawString("AI: " + scoreAI, canvasLeft + this.width / 4 - CustomThread.fontRenderer.getStringWidth("AI: " + scoreAI), canvasBottom - CustomThread.fontRenderer.FONT_HEIGHT * 2, 0xFFFFFF);
         CustomThread.drawString("Player: " + scorePlayer, canvasRight - this.width / 4 - CustomThread.fontRenderer.getStringWidth("Player: " + scoreAI), canvasBottom - CustomThread.fontRenderer.FONT_HEIGHT * 2, 0xFFFFFF);
         
         glPopMatrix();
         
-        glPushMatrix();
-        CustomThread.setColor(0xFFFFFF);
-        glTranslated(ballX, ballY, 0);
-        CustomThread.drawBox(ballSize, ballSize);
-        glPopMatrix();
         
     }
+    
     
     public double getPaddleX() {
         return paddleX;
