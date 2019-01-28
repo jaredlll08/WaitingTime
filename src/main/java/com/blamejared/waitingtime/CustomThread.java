@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.*;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.client.*;
+import net.minecraftforge.fml.client.SplashProgress;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.asm.FMLSanityChecker;
 import org.apache.commons.lang3.StringUtils;
@@ -25,11 +25,12 @@ import java.util.concurrent.locks.Lock;
 import static org.lwjgl.opengl.GL11.*;
 
 public class CustomThread {
+    
     public static StatHandler.Stat<Boolean> SHOW_TIME = new StatHandler.Stat<>("show_stats", Boolean::parseBoolean, true).saveDefault();
     public static StatHandler.Stat<Boolean> SHOW_START_TIMES = new StatHandler.Stat<>("show_start_times", Boolean::parseBoolean, true).saveDefault();
     public static StatHandler.Stat<Integer> LOAD_TIME = new StatHandler.Stat<>("load_time", Integer::parseInt, 0);
     public static StatHandler.Stat<Integer> START_TIMES = new StatHandler.Stat<>("start_times", Integer::parseInt, 0);
-
+    
     private static final Semaphore mutex = new Semaphore(1);
     private static final int TIMING_FRAME_COUNT = 200;
     private static final int TIMING_FRAME_THRESHOLD = TIMING_FRAME_COUNT * 5 * 1000000;
@@ -48,9 +49,9 @@ public class CustomThread {
     public static IResourcePack miscPack;
     
     
-    private static final ResourceLocation logoLoc = new ResourceLocation("textures/gui/title/mojang.png");
-    private static final ResourceLocation forgeLoc = new ResourceLocation(getString("forgeTexture", "fml:textures/gui/forge.png"));
-    private static final ResourceLocation forgeFallbackLoc = new ResourceLocation("fml:textures/gui/forge.png");
+    private static ResourceLocation logoLoc;
+    private static ResourceLocation forgeLoc;
+    private static ResourceLocation forgeFallbackLoc;
     
     public static SplashFontRenderer fontRenderer;
     private static final int barWidth = 400;
@@ -118,17 +119,18 @@ public class CustomThread {
         memoryGoodColor = getHex("memoryGood", 0x78CB34);
         memoryWarnColor = getHex("memoryWarn", 0xE6E84A);
         memoryLowColor = getHex("memoryLow", 0xE42F2F);
-        
-        File miscPackFile = new File(Minecraft.getMinecraft().mcDataDir, getString("resourcePackPath", "resources"));
+        logoLoc = new ResourceLocation("textures/gui/title/mojang.png");
+        forgeLoc = new ResourceLocation(getString("forgeTexture", "fml:textures/gui/forge.png"));
+        forgeFallbackLoc = new ResourceLocation("fml:textures/gui/forge.png");
         
         try(FileWriter w = new FileWriter(configFile)) {
             config.store(w, "Splash screen properties");
         } catch(IOException e) {
             FMLLog.log.error("Could not save the splash.properties file", e);
         }
+        File miscPackFile = new File(Minecraft.getMinecraft().mcDataDir, getString("resourcePackPath", "resources"));
         
         miscPack = createResourcePack(miscPackFile);
-        
         initReflection();
         return new Thread(new Runnable() {
             private long updateTiming;
@@ -154,12 +156,12 @@ public class CustomThread {
                 lastFPS = getTime();
                 boolean repeatEventsEnabled = Keyboard.areRepeatEventsEnabled();
                 Keyboard.enableRepeatEvents(true);
-
+                
                 boolean showTime = StatHandler.get(SHOW_TIME);
                 boolean showStartTimes = StatHandler.get(SHOW_START_TIMES);
                 int loadTime = StatHandler.get(LOAD_TIME);
                 int startTimes = StatHandler.get(START_TIMES);
-
+                
                 while(!isDone()) {
                     
                     updateFPS();
@@ -277,11 +279,11 @@ public class CustomThread {
                     game.render();
                     
                     drawString("FPS: " + currentFPS, left + 5, top + 5, 0xFFFFFF, 180);
-                    if (showTime) {
+                    if(showTime) {
                         drawString("Total Time: " + getReadableTime(loadTime + currentLoadTime), left + 5, top + 7 + fontRenderer.FONT_HEIGHT * 2, 0xFFFFFF, 180);
                         drawString("Current Time: " + getReadableTime(currentLoadTime), left + 5, top + 10 + fontRenderer.FONT_HEIGHT * 4, 0xFFFFFF, 180);
-                        drawString("Avg Time: " + getReadableTime(startTimes > 0 ? loadTime / startTimes: currentLoadTime), left + 5, top + 13 + fontRenderer.FONT_HEIGHT * 6, 0xFFFFFF, 180);
-                        if (showStartTimes)
+                        drawString("Avg Time: " + getReadableTime(startTimes > 0 ? loadTime / startTimes : currentLoadTime), left + 5, top + 13 + fontRenderer.FONT_HEIGHT * 6, 0xFFFFFF, 180);
+                        if(showStartTimes)
                             drawString("Times Loaded: " + startTimes, left + 5, top + 17 + fontRenderer.FONT_HEIGHT * 8, 0xFFFFFF, 180);
                     }
                     mutex.acquireUninterruptibly();
@@ -312,7 +314,7 @@ public class CustomThread {
                 StatHandler.set(LOAD_TIME, loadTime + currentLoadTime);
                 StatHandler.set(START_TIMES, startTimes + 1);
                 StatHandler.saveStats();
-
+                
                 Keyboard.enableRepeatEvents(repeatEventsEnabled);
                 clearGL();
             }
@@ -429,7 +431,7 @@ public class CustomThread {
         }
         fps++;
     }
-
+    
     public static String getReadableTime(int time) {
         int hours = time / 3600;
         int minutes = (time / 60) % 60;
