@@ -68,6 +68,7 @@ public class CustomThread {
     private static int memoryLowColor = 0xFF0000;
     private static int barBackgroundColor = 0;
     private static int barBorderColor = 0;
+    private static int frameLimiter = 100;
     
     private static int barColor;
     
@@ -122,6 +123,7 @@ public class CustomThread {
         memoryGoodColor = getHex("memoryGood", 0x78CB34);
         memoryWarnColor = getHex("memoryWarn", 0xE6E84A);
         memoryLowColor = getHex("memoryLow", 0xE42F2F);
+        frameLimiter = getInt("frameLimiter", 100);
         logoLoc = new ResourceLocation("textures/gui/title/mojang.png");
         forgeLoc = new ResourceLocation(getString("forgeTexture", "fml:textures/gui/forge.png"));
         forgeFallbackLoc = new ResourceLocation("fml:textures/gui/forge.png");
@@ -315,7 +317,7 @@ public class CustomThread {
                         if(framecount == TIMING_FRAME_COUNT) {
                             FMLLog.log.info("Using sync timing. {} frames of Display.update took {} nanos", TIMING_FRAME_COUNT, updateTiming);
                         }
-                        Display.sync(100);
+                        Display.sync(frameLimiter);
                     }
                 }
                 StatHandler.set(LOAD_TIME, loadTime + currentLoadTime);
